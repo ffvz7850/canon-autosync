@@ -1,0 +1,27 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.canon.backup'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.canon.backup"
+        minSdk 29
+        targetSdk 34
+        versionCode 95
+        versionName "1.2.84"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
