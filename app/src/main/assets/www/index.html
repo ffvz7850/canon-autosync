@@ -1,0 +1,1527 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#F7F8FA">
+<title>佳能备份</title>
+<style>
+:root{
+  --bg:#F7F8FA; --card:#FFFFFF; --line:#E9ECF0;
+  --txt:#1F2937; --sub:#8A94A6; --accent:#1A73E8;
+  --ok:#2E9E5B; --err:#D93B3B; --warn:#E8A020;
+  --radius:14px; --shadow:0 2px 12px rgba(15,23,42,.06);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{font-size:16px}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--txt);padding-bottom:env(safe-area-inset-bottom);min-height:100vh}
+button{font-family:inherit;border:none;background:none;cursor:pointer;color:inherit}
+input,select{font-family:inherit;font-size:15px;border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:#fff;color:var(--txt);outline:none;width:100%}
+input:focus,select:focus{border-color:var(--accent)}
+img{display:block}
+.hidden{display:none!important}
+/* ===== 顶栏 ===== */
+header{position:sticky;top:0;z-index:20;background:var(--bg);padding:calc(env(safe-area-inset-top) + 10px) 16px 8px;display:flex;align-items:center;gap:10px}
+.logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#1A73E8,#0D47A1);color:#fff;font-size:19px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;letter-spacing:1px}
+header h1{font-size:18px;font-weight:700;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#headStatus{font-size:11px;color:var(--sub);font-weight:400;display:block;margin-top:1px}
+.hbtn{width:34px;height:34px;border-radius:9px;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hbtn svg{width:18px;height:18px;stroke:var(--txt)}
+.hbtn.on{background:#E8F0FE;border-color:var(--accent)}
+.hbtn.on svg{stroke:var(--accent)}
+/* ===== 主按钮 ===== */
+.hero{padding:6px 16px 10px;display:flex;flex-direction:column;gap:9px}
+.btn-primary{width:100%;padding:15px;border-radius:var(--radius);background:linear-gradient(135deg,#1A73E8,#0D47A1);color:#fff;font-size:16px;font-weight:700;letter-spacing:2px;box-shadow:0 4px 14px rgba(26,115,232,.28);display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-primary:disabled{opacity:.55;box-shadow:none}
+.btn-primary svg{width:18px;height:18px;stroke:#fff}
+.btn-row{display:flex;gap:8px}
+.btn-sm{flex:1;padding:11px 0;border-radius:11px;background:var(--card);border:1px solid var(--line);font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:5px}
+.btn-sm svg{width:15px;height:15px;stroke:var(--txt)}
+.btn-sm.ctl{flex:0 0 auto;padding:11px 14px}
+.btn-sm.on{background:#E8F0FE;border-color:var(--accent);color:var(--accent)}
+.btn-sm.on svg{stroke:var(--accent)}
+.btn-sm.danger{color:var(--err)}
+/* ===== 设置卡片 ===== */
+.card{margin:0 16px 12px;background:var(--card);border-radius:var(--radius);border:1px solid var(--line);box-shadow:var(--shadow);overflow:hidden}
+.card>div{padding:12px 14px;border-bottom:1px solid var(--line)}
+.card>div:last-child{border-bottom:none}
+.c-title{font-size:13px;font-weight:700;margin-bottom:8px;color:var(--txt)}
+.row{display:flex;align-items:center;gap:10px}
+.row label{font-size:14px;flex:1;color:var(--txt)}
+.row .hint{display:block;font-size:11px;color:var(--sub);margin-top:2px}
+.inp{flex:0 0 auto;width:110px;text-align:center}
+/* 开关 */
+.sw{position:relative;width:44px;min-width:44px;height:24px;border-radius:12px;background:#D5DAE1;transition:background .2s;display:inline-block}
+.sw.on{background:var(--accent)}
+.sw .knob{position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .2s}
+.sw.on .knob{left:22px}
+.hidden-input{position:absolute;opacity:0;pointer-events:none}
+/* ===== 文件区 ===== */
+#secFiles{display:none}
+.toolbar{padding:6px 16px 8px;display:flex;align-items:center;gap:8px}
+.toolbar .cnt{font-size:12px;color:var(--sub);flex:1}
+.searchbox{position:relative;flex:0 0 auto;width:42px;height:34px}
+.searchbox.open{width:100%}
+.searchbox input{position:absolute;inset:0;padding-right:32px;opacity:0;transition:opacity .2s;border-radius:10px}
+.searchbox.open input{opacity:1}
+.searchbox button{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:26px;height:26px;display:flex;align-items:center;justify-content:center}
+.searchbox button svg{width:16px;height:16px;stroke:var(--txt)}
+.tabs{display:flex;gap:8px;padding:4px 16px 10px}
+.tabs button{flex:1;padding:7px 0;border-radius:9px;background:var(--card);border:1px solid var(--line);font-size:13px;color:var(--sub)}
+.tabs button.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+/* 排序条 */
+#sortbar{display:flex;gap:6px;padding:2px 16px 10px}
+#sortbar button{flex:0 0 auto;padding:5px 12px;border-radius:8px;background:var(--card);border:1px solid var(--line);font-size:12px;color:var(--sub)}
+#sortbar button.on{color:var(--accent);border-color:var(--accent);background:#E8F0FE}
+#list{padding:0 16px 12px}
+.lrow{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid #F0F2F5;cursor:pointer}
+.lrow:last-child{border-bottom:none}
+.lrow .ico{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.lrow .ico svg{width:20px;height:20px;stroke:#fff;fill:none}
+.lrow .ico.photo{background:linear-gradient(135deg,#34A853,#1B7A3B)}
+.lrow .ico.video{background:linear-gradient(135deg,#EA4335,#B31412)}
+.lrow .ico.raw{background:linear-gradient(135deg,#7B1FA2,#4A148C)}
+.lrow .ico.file{background:linear-gradient(135deg,#8A94A6,#5C6570)}
+.lrow .info{flex:1;min-width:0}
+.lrow .nm{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lrow .meta{display:flex;gap:8px;font-size:11px;color:var(--sub);margin-top:3px}
+.lrow .st{margin-left:auto}
+.lrow .st.done{color:var(--ok)}
+.lrow .st.sel{color:var(--accent)}
+.lrow.backed .nm{color:#B0B8C4}
+.lrow.backed .ico{filter:grayscale(.7);opacity:.6}
+.lrow .act{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.lrow .eye{width:28px;height:28px;border-radius:7px;background:#F1F3F6;display:flex;align-items:center;justify-content:center}
+.lrow .eye svg{width:14px;height:14px;stroke:var(--sub)}
+.lrow .chk{width:20px;height:20px;border-radius:6px;border:2px solid #C9CFD9;display:flex;align-items:center;justify-content:center}
+.lrow .chk svg{width:12px;height:12px;stroke:#fff;display:none}
+.lrow.sel .chk{background:var(--accent);border-color:var(--accent)}
+.lrow.sel .chk svg{display:block}
+.lrow.backed .chk{display:none}
+.more{display:none;width:100%;padding:12px;color:var(--accent);font-size:13px;font-weight:600;text-align:center}
+.more.show{display:block}
+.empty{padding:48px 20px;text-align:center;color:var(--sub);font-size:14px;line-height:1.8}
+/* 日期分组头 */
+.ghead{display:flex;align-items:center;gap:8px;padding:10px 2px 6px;font-size:13px;font-weight:700;color:var(--sub);cursor:pointer}
+.ghead::before{content:"";width:3px;height:14px;border-radius:2px;background:var(--accent)}
+.ghead .gcnt{font-size:11px;font-weight:400}
+.ghead .garr{margin-left:auto;font-size:11px;color:var(--sub)}
+/* ===== 查看器 ===== */
+#viewer{position:fixed;inset:0;background:#000;z-index:100;display:none;flex-direction:column}
+#viewer.show{display:flex}
+.view-top{display:flex;align-items:center;padding:calc(env(safe-area-inset-top) + 10px) 12px 8px;gap:8px}
+.view-top .vname{flex:1;color:#fff;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.view-top button{width:36px;height:36px;border-radius:9px;background:rgba(255,255,255,.12);color:#fff;display:flex;align-items:center;justify-content:center}
+.view-top button svg{width:18px;height:18px;stroke:#fff}
+.view-body{flex:1;display:flex;align-items:center;justify-content:center;padding:8px;overflow:hidden}
+.view-body img{max-width:100%;max-height:100%;object-fit:contain}
+.view-body video{max-width:100%;max-height:100%}
+.view-nav{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:60px;background:rgba(255,255,255,.1);color:#fff;font-size:22px;display:none;align-items:center;justify-content:center;border-radius:8px}
+.view-nav.left{left:8px}.view-nav.right{right:8px}
+#viewer.show .view-nav{display:flex}
+/* ===== 底部按钮 ===== */
+.footer{padding:10px 16px calc(env(safe-area-inset-bottom) + 12px);display:flex;flex-direction:column;gap:8px}
+.footer .btn-primary{position:relative}
+#btnAll{background:var(--card);color:var(--accent);border:1px solid var(--accent);box-shadow:none;letter-spacing:0;font-size:14px}
+/* ===== 弹层 ===== */
+.mask{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:60;display:none}
+.mask.show{display:block}
+.sheet{position:fixed;left:0;right:0;bottom:0;background:#fff;border-radius:16px 16px 0 0;z-index:70;padding:14px 16px calc(env(safe-area-inset-bottom) + 16px);transform:translateY(100%);transition:transform .25s;max-height:78vh;overflow-y:auto}
+.sheet.show{transform:translateY(0)}
+.sheet .stitle{font-size:15px;font-weight:700;margin-bottom:12px;display:flex;align-items:center}
+.sheet .stitle .x{margin-left:auto;width:28px;height:28px;border-radius:7px;background:#F1F3F6;display:flex;align-items:center;justify-content:center;font-size:15px}
+/* 结果弹窗 */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:80;display:none;align-items:center;justify-content:center;padding:24px}
+.modal.show{display:flex}
+.modal .box{background:#fff;border-radius:16px;width:100%;max-width:340px;overflow:hidden}
+.modal .mhead{padding:16px;text-align:center;font-size:16px;font-weight:700}
+.modal .mbody{padding:0 16px;max-height:40vh;overflow-y:auto}
+.ritem{display:flex;gap:8px;padding:8px 0;border-bottom:1px solid #F0F2F5;font-size:13px;align-items:flex-start}
+.ritem .rname{flex:0 0 auto;max-width:48%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--txt)}
+.ritem .rerr{color:var(--err);word-break:break-all}
+.modal .mfoot{padding:14px 16px;display:flex;gap:8px}
+.modal .mfoot button{flex:1;padding:11px 0;border-radius:10px;font-size:14px;font-weight:600}
+.modal .btn-ok{background:var(--accent);color:#fff}
+.modal .btn-cancel{background:#F1F3F6;color:var(--txt)}
+/* ===== 下载面板 ===== */
+#dlPanel{position:fixed;left:0;right:0;bottom:0;z-index:65;background:#fff;border-radius:16px 16px 0 0;box-shadow:0 -4px 20px rgba(0,0,0,.12);display:none;flex-direction:column;padding:12px 16px calc(env(safe-area-inset-bottom) + 12px);max-height:52vh}
+.dl-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.dl-head .t{font-size:14px;font-weight:700;flex:1}
+.dl-head button{width:26px;height:26px;border-radius:7px;background:#F1F3F6;font-size:12px;display:flex;align-items:center;justify-content:center}
+#pBarWrap{height:6px;background:#F1F3F6;border-radius:3px;overflow:hidden;margin-bottom:8px}
+#pBar{height:100%;width:0%;background:linear-gradient(90deg,#1A73E8,#4CAF50);border-radius:3px;transition:width .3s}
+.dl-info{font-size:12px;color:var(--sub);margin-bottom:6px}
+#pNum{font-weight:600;color:var(--txt)}
+#pName{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+#dlList{overflow-y:auto;flex:1;min-height:0}
+.dlitem{display:flex;gap:8px;padding:6px 0;border-bottom:1px solid #F5F6F8;font-size:12px;align-items:center}
+.dlitem .dn{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dlitem .ds{flex:0 0 auto;font-size:11px}
+.ds.wait{color:var(--sub)}.ds.dl{color:var(--accent)}.ds.ok{color:var(--ok)}.ds.fail{color:var(--err)}
+.dl-actions{display:flex;gap:8px;margin-top:8px}
+.dl-actions button{flex:1;padding:9px 0;border-radius:9px;font-size:13px;font-weight:600;background:#F1F3F6}
+.dl-actions .stop{color:var(--err)}
+/* FAB */
+#btnDlFab{position:fixed;right:16px;bottom:calc(env(safe-area-inset-bottom) + 20px);width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#1A73E8,#0D47A1);color:#fff;display:none;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(26,115,232,.4);z-index:55}
+#btnDlFab svg{width:22px;height:22px;stroke:#fff}
+#dlFabBadge{position:absolute;top:-3px;right:-3px;min-width:18px;height:18px;border-radius:9px;background:var(--err);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px}
+/* ===== 日志 ===== */
+#logBox{margin:4px 16px 14px;padding:12px;background:#0F172A;border-radius:12px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;line-height:1.7;color:#CBD5E1;max-height:190px;overflow-y:auto;white-space:pre-wrap;word-break:break-all}
+#logBox .ok{color:#4ADE80}#logBox .err{color:#F87171}#logBox .warn{color:#FBBF24}
+/* ===== 横幅 ===== */
+#bgBanner{display:none;align-items:center;gap:8px;margin:0 16px 10px;padding:10px 12px;background:#FFF8E1;border:1px solid #FFE082;border-radius:12px;font-size:12px;color:#7A5C00}
+#bgBanner b{flex:1}
+#bgBanner button{padding:6px 12px;border-radius:8px;background:#F57F17;color:#fff;font-size:12px;font-weight:600}
+#bgBanner .x{color:#9A7A2D;font-size:14px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">佳</div>
+  <h1>佳能备份<span id="headStatus">未连接</span></h1>
+  <button class="hbtn" id="btnSetup" title="设置"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+  <button class="hbtn" id="btnDiag" title="网络诊断"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20M12 2v20M4.9 4.9l14.2 14.2M19.1 4.9L4.9 19.1"/><circle cx="12" cy="12" r="2"/></svg></button>
+</header>
+
+<div class="hero">
+  <button class="btn-primary" id="btnConnect"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg><span id="btnConnectTxt">连接相机</span></button>
+  <div class="btn-row">
+    <button class="btn-sm" id="btnRefresh"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>刷新</button>
+    <button class="btn-sm" id="btnResume" style="display:none">继续备份</button>
+    <button class="btn-sm" id="btnCopyLog"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>复制日志</button>
+  </div>
+</div>
+
+<div class="card" id="secSetup" style="display:none">
+  <div>
+    <div class="c-title">相机连接</div>
+    <div class="row" style="margin-bottom:8px">
+      <label>相机 IP<input class="hint" value="相机屏幕显示的 IP（或 192.168.0.126）"></label>
+      <input class="inp" id="inpIp" placeholder="192.168.0.126">
+    </div>
+    <div class="row">
+      <label>端口<input class="hint" value="默认 8080，一般不用改"></label>
+      <input class="inp" id="inpPort" placeholder="8080">
+    </div>
+  </div>
+  <div>
+    <div class="c-title">自动备份</div>
+    <div class="row">
+      <label>拍照后自动备份<input class="hint" value="开启后按快门自动存入相册 CanonBackup"></label>
+      <span class="sw" id="swAuto"><span class="knob"></span></span>
+      <input type="checkbox" class="hidden-input" id="chkAuto">
+    </div>
+    <div class="row" style="margin-top:10px">
+      <label>连接后自动全备份<input class="hint" value="连上相机后自动备份全部未备份文件"></label>
+      <span class="sw" id="swAutoAll"><span class="knob"></span></span>
+      <input type="checkbox" class="hidden-input" id="chkAutoAll">
+    </div>
+    <div class="row" style="margin-top:10px">
+      <label>备份速度<input class="hint" value="相机慢时选 1（逐个备份最稳）"></label>
+      <select class="inp" id="selPar"><option value="1">1 个</option><option value="2">2 个</option><option value="3">3 个</option><option value="4">4 个</option><option value="5">5 个</option></select>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <label>快速检测间隔（秒）<input class="hint" value="无事件接口时轮询扫描的间隔"></label>
+      <input class="inp" id="inpTimerS" type="number" step="0.5" min="1">
+    </div>
+  </div>
+  <div>
+    <div class="c-title">后台保活</div>
+    <div class="row" style="margin-bottom:10px">
+      <label>悬浮窗权限<input class="hint" value="通知被划掉也能秒恢复前台服务"></label>
+      <button class="btn-sm ctl" id="btnKeep">开悬浮窗</button>
+    </div>
+    <div class="row">
+      <label>全部文件访问<input class="hint" value="开启后 RAW 防重彻底生效（重装不丢标记）"></label>
+      <button class="btn-sm ctl" id="btnAllFiles">去开启</button>
+    </div>
+  </div>
+</div>
+
+<div id="bgBanner"><b>开启悬浮窗权限，退后台也能持续备份</b><button id="bgBannerGo">去开启</button><button class="x" id="bgBannerClose">×</button></div>
+
+<div id="secFiles">
+  <div class="toolbar">
+    <span class="cnt" id="fileCount">…</span>
+    <div class="searchbox" id="searchBox">
+      <input id="inpSearch" placeholder="搜索文件名">
+      <button id="btnSearchClear"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35M8 8l6 6M14 8l-6 6"/></svg></button>
+    </div>
+  </div>
+  <div class="tabs" id="tabs">
+    <button class="on" data-f="all">全部</button>
+    <button data-f="photo">照片</button>
+    <button data-f="video">视频</button>
+    <button data-f="raw">RAW</button>
+  </div>
+  <div id="sortbar">
+    <button data-k="date">时间 ↓</button>
+    <button data-k="name">名称 ↓</button>
+    <button data-k="size">大小 ↓</button>
+  </div>
+  <div id="list"></div>
+  <div class="empty" id="emptyTip" style="display:none">相机里还没有可备份的照片/视频，<br>拍几张照片后点「刷新」试试。</div>
+  <button class="more" id="more">加载更多</button>
+</div>
+
+<div class="footer" id="footer">
+  <button class="btn-primary" id="btnBackup">备份选中（<span id="selCount">0</span>）</button>
+  <button class="btn-sm" id="btnAll" style="display:none">全选未备份</button>
+</div>
+
+<!-- 下载面板 -->
+<div id="dlPanel">
+  <div class="dl-head"><span class="t">备份进度</span><span id="dlSpeed" style="font-size:12px;color:var(--sub)"></span><button id="btnDlClose">×</button></div>
+  <div id="pBarWrap"><div id="pBar"></div></div>
+  <div class="dl-info" id="pNum"></div>
+  <div class="dl-info"><span id="pName"></span></div>
+  <div id="dlList"></div>
+  <div class="dl-actions">
+    <button class="stop" id="btnStop">停止</button>
+    <button id="btnDlClear">清空任务</button>
+  </div>
+</div>
+<button id="btnDlFab"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg><span id="dlFabBadge"></span></button>
+
+<!-- 查看器 -->
+<div id="viewer">
+  <div class="view-top">
+    <button id="btnViewClose"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <span class="vname" id="viewName"></span>
+  </div>
+  <div class="view-body">
+    <img id="viewImg" alt="">
+    <video id="viewVid" controls></video>
+  </div>
+  <div class="view-nav left" id="btnPrev">‹</div>
+  <div class="view-nav right" id="btnNext">›</div>
+</div>
+
+<!-- 结果弹窗 -->
+<div class="modal" id="resultModal">
+  <div class="box">
+    <div class="mhead">备份结果</div>
+    <div class="mbody" id="rStat"></div>
+    <div class="mbody" id="rList"></div>
+    <div class="mfoot">
+      <button class="btn-cancel" id="btnRetryFail">重试失败</button>
+      <button class="btn-ok" id="btnCloseResult">完成</button>
+    </div>
+  </div>
+</div>
+<div class="mask" id="rmask"></div>
+
+<div id="logBox"></div>
+
+<script>
+/* ===== 全局状态 ===== */
+const NATIVE = !!(window.CameraBridge && window.CameraBridge.available);
+const BACKUP_EXTS = [".jpg",".jpeg",".cr3",".cr2",".heif",".hif",".mp4",".mov"];
+const PREVIEW_EXTS = [".jpg",".jpeg",".heif",".hif"];
+const S = {
+  ip: localStorage.getItem("cam_ip") || "192.168.0.126",
+  port: localStorage.getItem("cam_port") || "8080",
+  base: "", cardPath: "",
+  connected: false, files: [], selected: new Set(), backed: new Set(),
+  sizes: {}, dates: {},
+  auto: localStorage.getItem("cam_auto") !== "0",
+  autoAll: localStorage.getItem("cam_autoall") === "1",
+  sort: localStorage.getItem("cam_sort") || "date_desc",
+  filter: "all", search: "", visible: 50,
+  par: parseInt(localStorage.getItem("cam_par") || "1") || 1,
+  pollS: parseFloat(localStorage.getItem("cam_poll_s") || "2.5") || 2.5,
+  timerS: parseFloat(localStorage.getItem("cam_timer_s") || "2.5") || 2.5,
+  openGroups: new Set(),
+  busy: false, stop: false, paused: false, gen: 0,
+  queue: null, dlItems: [], dlOpen: false,
+  evtMode: null, evtDead: false, evtPaths: null, pollQuery: "?timeout=long",
+  log: ""
+};
+
+const $ = id => document.getElementById(id);
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
+function toast(msg){
+  const t=document.createElement("div");
+  t.style.cssText="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(15,23,42,.88);color:#fff;padding:10px 18px;border-radius:10px;font-size:13px;z-index:200;max-width:80%;text-align:center;pointer-events:none";
+  t.textContent=msg;document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2200);
+}
+function log(msg, cls){
+  const t=new Date();
+  const ts=t.getHours().toString().padStart(2,"0")+":"+t.getMinutes().toString().padStart(2,"0")+":"+t.getSeconds().toString().padStart(2,"0");
+  const line='<span class="'+cls+'">'+esc(msg)+"</span>";
+  const el=$("logBox");
+  el.innerHTML+='<div>'+ts+" "+line+"</div>";
+  el.scrollTop=el.scrollHeight;
+  S.log+="["+ts+"] "+msg+"\n";
+  if(el.children.length>120) el.removeChild(el.firstChild);
+}
+window.__evtLog=function(m){ log(m); };
+window.__permResult=function(g){ if(g) toast("存储权限已开启"); };
+
+/* ===== 相机 HTTP 封装（走原生桥，绕过 CORS） ===== */
+function camUrl(p){ return S.base + p; }
+function reqText(url, ms){ return NATIVE ? window.CameraBridge.requestText(url, ms) : fetchText(url, ms); }
+function reqTextFast(url){ return NATIVE ? window.CameraBridge.requestTextFast(url) : fetchText(url, 6000); }
+function fetchText(url, ms){
+  return new Promise((resolve,reject)=>{
+    const ctl=new AbortController();
+    const t=setTimeout(()=>ctl.abort(),ms||10000);
+    fetch(url,{signal:ctl.signal}).then(r=>r.text()).then(v=>{clearTimeout(t);resolve('{"status":200,"body":'+JSON.stringify(v)+"}");}).catch(e=>{clearTimeout(t);resolve('{"status":0,"error":"'+e.name+'"}');});
+  });
+}
+/* 连接主流程：探测 + 官方 topurlfordev 端点自报 + 事件模式判定 */
+async function connect(){
+  const btn=$("btnConnect");
+  if(btn.disabled) return;
+  btn.disabled=true; btn.querySelector("span").textContent="连接中…";
+  const ip=$("inpIp").value.trim()||S.ip;
+  const port=$("inpPort").value.trim()||"8080";
+  S.ip=ip; S.port=port;
+  localStorage.setItem("cam_ip",ip); localStorage.setItem("cam_port",port);
+  S.base="http://"+ip+":"+port;
+  try{
+    log("已连接 "+S.base+"，正在扫描照片（相机较慢时约需 10~30 秒）…");
+    // 官方连接流程 1/3：topurlfordev 自报（不猜测，不探测版本）
+    const top=reqText(S.base+"/ccapi/ver100/topurlfordev");
+    let paths=null;
+    try{
+      const j=JSON.parse(top);
+      paths=j.urls||null;
+    }catch(e){}
+    log("官方支持 API: "+(paths?Object.keys(paths).map(v=>v+":"+paths[v].length).join(" "):"未返回")+"；事件端点: "+(paths?Object.keys(paths).filter(k=>/event/i.test(k)).map(k=>k+" "+paths[k]).join(" | "):"未知"),"ok");
+    S.evtPaths=null;
+    if(paths){
+      const ev=Object.keys(paths).filter(k=>/event\/(polling|monitoring)/i.test(k));
+      if(ev.length){
+        S.evtPaths={};
+        for(const k of ev){
+          const p=paths[k];
+          if(/polling/i.test(k)) S.evtPaths.polling=p;
+          else if(/monitoring/i.test(k)) S.evtPaths.monitoring=p;
+        }
+      }
+    }
+    // 事件模式判定：官方优先级 polling（ver110 默认 timeout=long）> monitoring > 快速检测
+    // monitoring 探测：官方 monitoring 为持续 chunked 流，探测时 3s 超时即视为可用（收到 503 说明相机正忙，等会再说）
+    S.evtMode=null; S.evtDead=false;
+    if(S.evtPaths&&S.evtPaths.polling){
+      S.evtMode="poll";
+      log("相机支持官方事件轮询，将启用秒级事件监听","ok");
+    }else if(S.evtPaths&&S.evtPaths.monitoring){
+      S.evtMode="monitor";
+      log("相机支持官方事件流 monitoring，将启用秒级事件监听","ok");
+    }else{
+      S.evtDead=true; S.evtMode="timer";
+      log("相机无官方事件端点，使用快速检测","warn");
+    }
+    // 官方连接流程 2/3：contents 探测（ver140 或 ver100 自报列表）
+    let card=null;
+    const tryPaths=["/ccapi/ver140/contents","/ccapi/ver100/contents"];
+    for(const p of tryPaths){
+      const r=reqTextFast(S.base+p);
+      try{
+        const j=JSON.parse(r);
+        if(j&&typeof j==="object"){
+          if(j.cards&&j.cards.length){ card=p; S.cardPath=p+"/card1"; break; }
+          if(j.files||j.subdirs){ card=p; S.cardPath=p; break; }
+        }
+      }catch(e){}
+      if(/^HTTP 2/.test(r)){ card=p; S.cardPath=p; break; }
+    }
+    if(!card) throw new Error("无法访问相机存储目录（HTTP 状态异常）");
+    log("存储卡路径: "+S.cardPath);
+    // 官方连接流程 3/3：初始全量扫描 + 双向对账
+    await markLocalBacked();
+    await scan();
+    S.connected=true;
+    $("headStatus").textContent="已连接";
+    $("btnConnectTxt").textContent="重新连接";
+    btn.disabled=false;
+    log("连接完成，自动备份"+(S.auto?"已开启（拍照即同步）":"未开启"),"ok");
+    // 事件监听主循环（后台异步）
+    if(NATIVE) eventLoop();
+    else startTimer();
+    if(S.autoAll) runBackup(S.files.filter(f=>!S.backed.has(nameOf(f))), false);
+  }catch(e){
+    S.connected=false; S.base="";
+    $("headStatus").textContent="未连接";
+    $("btnConnectTxt").textContent="重新连接";
+    const tip=NATIVE?"":"（网页版受浏览器 CORS 限制，建议安装 App 版）";
+    log("连接失败："+e.message+tip,"err");
+    if(NATIVE){
+      try{
+        const d=window.CameraBridge.diagnose(S.ip,S.port);
+        log("—— 自动诊断 ——\n"+esc(d).replace(/\n/g,"<br>"));
+      }catch(e2){}
+    }
+    toast("连接失败"+tip);
+  }finally{
+    btn.disabled=false; btn.querySelector("span").textContent=S.connected?"重新连接":"连接相机";
+  }
+}
+/* ===== 目录列表 ===== */
+async function listDir(url, page){
+  const p=page?"&page="+page:"";
+  const r=reqText(url+(url.includes("?")?"&":"?")+"kind=list"+p);
+  let j;
+  try{ j=JSON.parse(r); }catch(e){ throw new Error("解析目录失败: "+r.slice(0,120)); }
+  if(j.status&&j.status>=400) throw new Error("HTTP "+j.status);
+  if(j.error) throw new Error(j.error);
+  const dirs=j.subdirs||[];
+  const files=j.files||[];
+  const items=(j.items&&Array.isArray(j.items))?j.items:dirs.concat(files);
+  return items.map(it=>typeof it==="string"?it:(it.name||it.href||""));
+}
+/* 分页递归枚举：kind=list 每页 100 条，逐页翻到相机报空/重复为止（官方分页契约） */
+async function listAll(root, onProg){
+  const out=[];
+  const stack=[root];
+  const seen=new Set();
+  while(stack.length){
+    const d=stack.pop();
+    let page=1;
+    while(true){
+      let hrefs=[];
+      try{ hrefs=await listDir(d,page); }
+      catch(e){
+        if(/404/.test(e.message)) break;   // 子目录已被移除，跳过
+        if(/^HTTP 50[234]/.test(e.message)){ await sleep(800); continue; }  // 相机忙，稍后重试当前页
+        if(page>1) break;                    // 第二页起失败则停止翻页（该页已取到）
+        throw e;
+      }
+      if(!hrefs.length) break;
+      let newAny=false;
+      for(const h of hrefs){
+        if(seen.has(h)) continue;
+        seen.add(h); newAny=true;
+        if(h.endsWith("/")) stack.push(h);
+        else out.push(h);
+      }
+      if(onProg) onProg(out.length);
+      if(!newAny||hrefs.length<100) break;   // 官方分页：满 100 条才继续翻页
+      page++;
+      await sleep(40);
+    }
+  }
+  return out;
+}
+/* 仅列当前目录（不递归），供增量扫描使用 */
+async function listDirFlat(url){
+  const r=reqText(url+"?kind=list");
+  let j;
+  try{ j=JSON.parse(r); }catch(e){ return []; }
+  if(j.status&&j.status>=400) return [];
+  const dirs=j.subdirs||[]; const files=j.files||[];
+  const items=(j.items&&Array.isArray(j.items))?j.items:dirs.concat(files);
+  return items.map(it=>typeof it==="string"?it:(it.name||it.href||""));
+}
+/* ===== 文件信息（kind=number 获取大小） ===== */
+async function fileSize(href){
+  const r=reqText(camUrl(href)+"?kind=number");
+  try{
+    const j=JSON.parse(r);
+    if(j&&typeof j.size==="number") return j.size;
+    if(j&&j.size&&j.size[0]&&typeof j.size[0].size==="number") return j.size[0].size;
+  }catch(e){}
+  return 0;
+}
+function nameOf(h){ return decodeURIComponent(h.split("/").pop()); }
+function extTypeOf(h){
+  const n=nameOf(h).toLowerCase();
+  if(/\.(jpe?g|heif|hif)$/.test(n)) return "photo";
+  if(/\.(mp4|mov)$/.test(n)) return "video";
+  if(/\.(cr3|cr2)$/.test(n)) return "raw";
+  return "file";
+}
+const PH_ICONS={
+  photo:'<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>',
+  video:'<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m10 9 5 3-5 3z"/></svg>',
+  raw:'<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 18v-6M9 15l3 3 3-3"/></svg>',
+  file:'<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>'
+};
+/* 排序：时间（拍摄时间>备份时间）>名称>大小 */
+function sortedList(){
+  const k=S.sort.split("_")[0];
+  const dir=S.sort.split("_")[1]==="asc"?1:-1;
+  const arr=[...S.files];
+  arr.sort((a,b)=>{
+    let r=0;
+    if(k==="date"){
+      const ta=timeOf(a),tb=timeOf(b);
+      if(ta!==tb) r=ta<tb?-1:1;
+    }else if(k==="name"){
+      r=nameOf(a).localeCompare(nameOf(b),"zh",{numeric:true});
+    }else if(k==="size"){
+      const sa=S.sizes[nameOf(a)]||0,sb=S.sizes[nameOf(b)]||0;
+      if(sa!==sb) r=sa<sb?-1:1;
+    }
+    return r*dir;
+  });
+  return arr;
+}
+function filtered(){
+  const kw=(S.search||"").trim().toLowerCase();
+  return sortedList().filter(h=>{
+    if(S.filter!=="all"&&extTypeOf(h)!==S.filter) return false;
+    if(kw&&!nameOf(h).toLowerCase().includes(kw)) return false;
+    return true;
+  });
+}
+function viewList(){ return filtered(); }
+function timeOf(h){
+  const n=nameOf(h);
+  if(S.dates[n]) return S.dates[n];
+  return 0;   // 未备份且无拍摄时间：排最后（归入「未备份」组）
+}
+function dateKeyOf(h){
+  const t=timeOf(h);
+  if(!t) return "未备份";
+  const d=new Date(t);
+  const y=d.getFullYear();
+  const m=(d.getMonth()+1).toString().padStart(2,"0");
+  const dd=d.getDate().toString().padStart(2,"0");
+  return y+"-"+m+"-"+dd;
+}
+/* 已备份标记（localStorage + 原生 MediaStore 双向）：扫描后逐文件核对 */
+async function markLocalBacked(){
+  if(!NATIVE) return;
+  try{
+    log("正在核对本地已备份文件（本地实况与已备份标记双向同步）…");
+    const map={};
+    try{ map=JSON.parse(window.CameraBridge.getBackedTimes()||"{}"); }catch(e){}
+    const now=new Set(Object.keys(map));
+    const mark=JSON.parse(localStorage.getItem("cam_backed")||"[]");
+    const markset=new Set(mark);
+    for(const n of now) if(!markset.has(n)) markset.add(n);
+    // 本地已无该文件（用户删除）：解除标记
+    for(const n of markset) if(!now.has(n)) markset.delete(n);
+    S.backed=new Set(markset);
+    localStorage.setItem("cam_backed",JSON.stringify([...markset]));
+    for(const n of now) if(!S.dates[n]) S.dates[n]=map[n];
+    log("本地核对完成：补标记 "+now.size+" 个","ok");
+  }catch(e){
+    log("本地核对失败："+e.message,"warn");
+  }
+}
+/* 已备份状态持久化 */
+function saveBacked(){ localStorage.setItem("cam_backed",JSON.stringify([...S.backed])); }
+function loadBacked(){
+  try{ S.backed=new Set(JSON.parse(localStorage.getItem("cam_backed")||"[]")); }catch(e){ S.backed=new Set(); }
+}
+function saveSizes(){ localStorage.setItem("cam_sizes",JSON.stringify(S.sizes)); }
+function saveDates(){ localStorage.setItem("cam_dates",JSON.stringify(S.dates)); }
+function loadMeta(){
+  try{ S.sizes=JSON.parse(localStorage.getItem("cam_sizes")||"{}"); }catch(e){ S.sizes={}; }
+  try{ S.dates=JSON.parse(localStorage.getItem("cam_dates")||"{}"); }catch(e){ S.dates={}; }
+}
+/* 扫描缓存（对比新增/移除） */
+function loadScanCache(){ try{ return new Set(JSON.parse(localStorage.getItem("cam_scan")||"[]")); }catch(e){ return new Set(); } }
+function saveScanCache(s){ localStorage.setItem("cam_scan",JSON.stringify([...s])); }
+/* 分组展开状态 */
+function loadOpenGroups(){ try{ S.openGroups=new Set(JSON.parse(localStorage.getItem("cam_open")||"[]")); }catch(e){ S.openGroups=new Set(); } }
+function saveOpenGroups(){ localStorage.setItem("cam_open",JSON.stringify([...S.openGroups])); }
+/* 触发重渲染（节流：60ms 内只跑一次） */
+let _rrT=0;
+function rerenderThrottled(){
+  const now=Date.now();
+  if(now-_rrT<60) return;
+  _rrT=now;
+  render();
+}
+/* 原生下载：进度回调 onProg(bytes,total) */
+function nativeDownload(url, name, offset, onProg){
+  return new Promise((resolve,reject)=>{
+    const cb="__dl"+(Math.random()*1e9|0);
+    window[cb]=r=>{
+      try{ delete window[cb]; }catch(e){}
+      if(!r||typeof r!=="object"){ reject(new Error("下载回调异常")); return; }
+      if(r.phase==="prog"){ if(onProg) onProg(r.bytes||0,r.total||0); return; }
+      if(r.phase==="busy"){ reject(new Error(r.error||"HTTP 503")); return; }
+      if(r.phase==="err"){ reject(new Error(r.error||"下载失败")); return; }
+      if(r.phase==="done"){ resolve({complete:true,bytes:r.bytes||0,offset:(r.bytes||0),verified:!!r.verified,time:r.time||0,skipped:!!r.skipped}); return; }
+      reject(new Error("未知回调"));
+    };
+    try{ window.CameraBridge.downloadProg(url,name,offset,"window."+cb); }
+    catch(e){ try{ delete window[cb]; }catch(e2){} reject(e); }
+  });
+}
+/* ===== 连接按钮 ===== */
+$("btnConnect").onclick=connect;
+/* ===== 刷新 ===== */
+$("btnRefresh").onclick=async()=>{
+  if(!S.connected) return;
+  await scan();
+  await markLocalBacked();
+};
+/* ===== 扫描 ===== */
+async function scan(){
+  if(!S.connected) return;
+  $("secFiles").style.display="block";
+  $("list").innerHTML="";
+  $("emptyTip").style.display="none";
+  $("fileCount").textContent="扫描中…";
+  $("headStatus").textContent="扫描中…";
+  log("开始扫描相机目录（已限速，避免压垮相机）…");
+  try{
+    const root=S.cardPath?camUrl(S.cardPath):camUrl("/contents");
+    const files=await listAll(root,n=>{$("fileCount").textContent="扫描目录 "+n+"…";});
+    S.files=files.filter(f=>BACKUP_EXTS.includes("."+f.split(".").pop().toLowerCase()));
+    S.selected.clear();
+    S.visible=50;
+    rowCache.clear();
+    render();
+    if(S.connected) $("headStatus").textContent="已连接";
+    renderQueueBtn();
+    // 扫描差异提示
+    {
+      const firstScan=localStorage.getItem("cam_scan")===null;
+      const prev=loadScanCache();
+      const nowSet=new Set(S.files.map(nameOf));
+      let added=0,removed=0;
+      if(!firstScan){
+        for(const n of nowSet) if(!prev.has(n)) added++;
+        for(const n of prev) if(!nowSet.has(n)) removed++;
+      }
+      saveScanCache(nowSet);
+      log(`扫描完成：共 ${S.files.length} 个`+(firstScan?"":added?` · 新增 ${added} 个`:"（无新文件）")+(removed?` · 移除 ${removed} 个`:""),"ok");
+    }
+  }catch(e){
+    if(S.connected) $("headStatus").textContent="已连接";
+    if(/404/.test(e.message)){
+      log("相机存储目录暂不可读（可能刚开机或卡内无照片目录），请刷新重试","err");
+    }else{
+      log("扫描失败："+e.message,"err");
+      toast("扫描失败："+e.message);
+    }
+  }
+}
+/* ===== 渲染（详细列表） ===== */
+let rowCache=new Map();
+function render(){
+  const list=sortedList();
+  const arr=viewList();
+  const g=$("list");
+  g.innerHTML="";
+  const kw=(S.search||"").trim();
+  const grouped=!kw&&S.sort.startsWith("date");
+  let shown=0;
+  if(grouped){
+    const grMap=new Map(),grOrder=[];
+    for(const h of arr){
+      const k=dateKeyOf(h);
+      if(!grMap.has(k)){ grMap.set(k,[]); grOrder.push(k); }
+      grMap.get(k).push(h);
+    }
+    grOrder.sort((a,b)=>(a==="未备份"?-1:b==="未备份"?1:a>b?-1:a<b?1:0));
+    if(!S.openGroups.size&&localStorage.getItem("cam_open")===null&&grOrder.length){
+      S.openGroups.add(grOrder[0]);
+      saveOpenGroups();
+    }
+    outer:for(const k of grOrder){
+      const items=grMap.get(k);
+      const open=S.openGroups.has(k);
+      g.appendChild(buildGroupHead(k,items.length,open));
+      if(open){
+        for(const h of items){
+          if(shown>=S.visible) break outer;
+          shown++;
+          g.appendChild(rowOf(h));
+        }
+      }
+    }
+  }else{
+    for(const h of arr.slice(0,S.visible)){ shown++; g.appendChild(rowOf(h)); }
+  }
+  const inList=new Set(list);
+  for(const [k] of rowCache) if(!inList.has(k)) rowCache.delete(k);
+  const cnt=countByType();
+  $("fileCount").textContent=kw?`匹配 ${arr.length} 个`:`共 ${S.files.length} 个（照片${cnt.photo} · 视频${cnt.video}${cnt.raw?" · RAW"+cnt.raw:""}）`;
+  $("selCount").textContent=S.selected.size;
+  const unb=arr.filter(h=>!S.backed.has(nameOf(h))).length;
+  $("btnAll").textContent=(S.selected.size===unb&&unb)?"取消全选":"全选未备份";
+  $("btnAll").style.display=(S.filter==="all"&&!kw)?"":"none";
+  $("more").className="more"+(shown>=S.visible&&shown<arr.length?" show":"");
+  $("emptyTip").innerHTML=kw?`没有匹配「${esc(S.search)}」的文件`:"相机里还没有可备份的照片/视频，<br>拍几张照片后点「刷新」试试。";
+  $("emptyTip").style.display=arr.length?"none":"block";
+}
+function buildGroupHead(k,n,open){
+  const d=document.createElement("div");
+  d.className="ghead";
+  d.innerHTML=esc(k)+' <span class="gcnt">'+n+" 个</span>"+'<span class="garr">'+(open?"收起 ▴":"展开 ▾")+"</span>";
+  d.onclick=()=>{ if(open) S.openGroups.delete(k); else S.openGroups.add(k); saveOpenGroups(); render(); };
+  return d;
+}
+function countByType(){
+  const c={photo:0,video:0,raw:0};
+  S.files.forEach(h=>{ const t=extTypeOf(h); if(t!=="file") c[t]++; });
+  return c;
+}
+function typeLabel(t){ return t==="photo"?"照片":t==="video"?"视频":t==="raw"?"RAW":"文件"; }
+function buildRow(href){
+  const name=nameOf(href);
+  const t=extTypeOf(href);
+  const row=document.createElement("div");
+  row._href=href;
+  row.innerHTML=
+    '<div class="ico '+t+'">'+PH_ICONS[t==="file"?"file":t]+'</div>'+
+    '<div class="info">'+
+      '<div class="nm">'+esc(name)+'</div>'+
+      '<div class="meta">'+
+        '<span class="sz">'+(S.sizes[name]?fmtSize(S.sizes[name]):"—")+'</span>'+
+        '<span class="tp">'+typeLabel(t)+'</span>'+
+        '<span class="st"></span>'+
+      '</div>'+
+    '</div>'+
+    '<div class="act">'+
+      (t==="photo"?'<button class="eye"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></button>':'')+
+      '<span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7" stroke-width="3.2"/></svg></span>'+
+    '</div>';
+  row.onclick=e=>{
+    if(e.target.closest(".eye")){ openPreviewAt(href); }
+    else{ toggle(href); }
+  };
+  return row;
+}
+function setRowState(row,href){
+  const backed=S.backed.has(nameOf(href));
+  row.className="lrow"+(backed?" backed":"")+(S.selected.has(href)?" sel":"");
+  const st=row.querySelector(".st");
+  if(backed){ st.textContent="已备份"; st.className="st done"; }
+  else if(S.selected.has(href)){ st.textContent="已选"; st.className="st sel"; }
+  else{ st.textContent=""; st.className="st"; }
+}
+function rowOf(href){
+  let r=rowCache.get(href);
+  if(!r){ r=buildRow(href); rowCache.set(href,r); }
+  setRowState(r,href);
+  return r;
+}
+function toggle(href){
+  if(S.backed.has(nameOf(href))){ toast("该文件已备份，无需重复下载"); return; }
+  if(S.selected.has(href)) S.selected.delete(href); else S.selected.add(href);
+  const r=rowCache.get(href);
+  if(r) setRowState(r,href);
+  $("selCount").textContent=S.selected.size;
+}
+/* 预览 */
+let previewList=[],previewIdx=-1;
+function openPreviewAt(href){
+  previewList=filtered().filter(h=>extTypeOf(h)==="photo");
+  previewIdx=previewList.indexOf(href);
+  if(previewIdx<0) previewIdx=0;
+  showPreview();
+}
+function showPreview(){
+  const href=previewList[previewIdx];
+  if(!href) return;
+  const name=nameOf(href);
+  $("viewName").textContent=(previewIdx+1)+" / "+previewList.length+"  "+name;
+  const vi=$("viewImg");
+  vi.style.display="block";
+  vi.src=camUrl(href)+"?kind=thumbnail";
+  $("viewer").classList.add("show");
+}
+function prevPreview(){ if(previewIdx>0){ previewIdx--; showPreview(); } }
+function nextPreview(){ if(previewIdx<previewList.length-1){ previewIdx++; showPreview(); } }
+$("btnPrev").onclick=prevPreview;
+$("btnNext").onclick=nextPreview;
+/* ===== 备份 ===== */
+async function backup(){
+  const list=[...S.selected];
+  if(!list.length){ toast("请先选择要备份的照片"); return; }
+  await runBackup(list,false);
+}
+/* 断点续传队列 */
+function loadQueue(){ try{ return JSON.parse(localStorage.getItem("cam_queue")||"null"); }catch(e){ return null; } }
+function saveQueue(q){ localStorage.setItem("cam_queue",JSON.stringify(q)); }
+function clearQueue(){ localStorage.removeItem("cam_queue"); }
+function renderQueueBtn(){
+  const n=S.queue&&S.queue.pending?S.queue.pending.length:0;
+  const b=$("btnResume");
+  if(b){ b.style.display=n?"inline-block":"none"; b.textContent="继续备份（"+n+"）"; }
+}
+function normQueue(q){
+  if(!q||!Array.isArray(q.pending)) return null;
+  return q.pending.map(it=>typeof it==="string"?{href:it,offset:0}:it);
+}
+async function runBackup(files,auto){
+  if(S.busy) return;
+  const gen=(S.gen||0)+1; S.gen=gen;
+  S.busy=true;
+  S.stop=false;
+  S.paused=false;
+  $("btnStop").disabled=false; $("btnStop").textContent="停止";
+  S.progBytes=0; S.progTime=0; S.curSpeed="";
+  const spE0=$("dlSpeed"); if(spE0) spE0.textContent="";
+  const old=normQueue(S.queue)||[];
+  const map=new Map();
+  for(const it of old) map.set(it.href,it.offset||0);
+  for(const h of files) if(!map.has(h)) map.set(h,0);
+  const list=[...map.entries()];
+  S.queue={pending:list.map(([h,o])=>({href:h,offset:o})),ts:Date.now()};
+  saveQueue(S.queue);
+  S.dlItems=list.map(([h])=>({href:h,name:nameOf(h),state:"wait",err:""}));
+  S.dlOpen=true;
+  $("dlPanel").style.display="flex";
+  renderDl();
+  $("pBar").style.width="0%"; $("pNum").textContent=`0 / ${list.length} · 0%`;
+  $("pName").textContent="准备中…";
+  let done=0,fail=0,bytes=0;
+  const CONC=Math.min(Math.max(S.par||1,1),5);
+  S.effPar=CONC;
+  const queue=[...list];
+  let idx=0;
+  let active=0;
+  async function worker(){
+    while(idx<queue.length&&!S.stop){
+      if(S.paused){
+        $("pName").textContent="相机断开，等待恢复…";
+        const up=await probeCamera();
+        if(up){
+          S.paused=false;
+          log("相机已恢复，继续备份…","ok");
+          $("pName").textContent="继续备份…";
+        }else{
+          await sleep(3000);
+          continue;
+        }
+      }
+      if(active>=S.effPar){ await sleep(200); continue; }
+      active++;
+      const item=queue[idx++];
+      const href=item[0];
+      let off=item[1];
+      const name=nameOf(href);
+      const di=S.dlItems.find(d=>d.href===href);
+      let ok=false,errMsg="";
+      let lastB=-1,lastT=0;
+      for(let attempt=0;attempt<6&&!ok;attempt++){
+        if(di){ di.state="dl"; renderDl(); }
+        $("pName").textContent="正在下载 "+name+(off>0?"（续传 "+fmtSize(off)+"）":"");
+        try{
+          const saved=await fetchBlob(href,off,(b,t)=>{
+            const now=Date.now();
+            if(lastB<0){ lastB=b; lastT=now; }
+            else if(b>=lastB&&now-lastT>=2000){
+              const db=b-lastB;
+              const dt=now-lastT;
+              if(dt>=1500) S.curSpeed=fmtSize(Math.round(db*1000/dt))+"/s";
+              lastB=b; lastT=now;
+            }
+            const per=t>0?Math.min(1,b/t):0;
+            const pct=Math.round((done+fail+per)/list.length*100);
+            $("pBar").style.width=pct+"%";
+            $("pNum").textContent=`${done+fail+Math.floor(per)} / ${list.length} · ${fmtSize(bytes+b)}`;
+            const spE=$("dlSpeed"); if(spE) spE.textContent=S.curSpeed||"";
+          });
+          if(!saved.complete){
+            off=saved.offset||off;
+            item[1]=off;
+            S.queue={pending:queue.map(([h2,o2])=>({href:h2,offset:o2})),ts:Date.now()};
+            saveQueue(S.queue);
+            continue;
+          }
+          if((saved.bytes||0)===0){ await sleep(1200); continue; }
+          ok=true; done++; bytes+=saved.bytes||0;
+          S.sizes[name]=saved.bytes||0; saveSizes();
+          if(saved.time>0){ S.dates[name]=saved.time; saveDates(); }
+          else{ S.dates[name]=Date.now(); saveDates(); }
+          log(`已保存 ${name}（${fmtSize(saved.bytes||0)}${saved.verified?" · 校验通过":""}）`,"ok");
+          S.selected.delete(href);
+          S.backed.add(name); saveBacked();
+          rerenderThrottled();
+          if(di){ di.state="ok"; }
+        }catch(e){
+          errMsg=e.message||"未知错误";
+          if(isDisconnect(e.message)){
+            S.paused=true;
+            log("相机连接中断，已暂停备份，等待自动恢复…","warn");
+            await sleep(1200);
+            continue;
+          }
+          if(isBusy(e.message)){
+            if(S.effPar>1){
+              S.effPar=1;
+              log("相机不支持并发下载，已自动切换为「逐个备份」（最稳定）","warn");
+            }
+            await sleep(1500); continue;
+          }
+          log("保存失败 "+name+"："+e.message,"err");
+          break;
+        }
+      }
+      if(!ok){
+        fail++;
+        if(di){ di.state="fail"; di.err=errMsg; }
+      }
+      active--;
+      renderDl();
+      const pct=Math.round((done+fail)/list.length*100);
+      $("pBar").style.width=pct+"%";
+      $("pNum").textContent=`${done+fail} / ${list.length} · ${pct}%${bytes?" · "+fmtSize(bytes):""}`;
+    }
+  }
+  const ws=[];
+  for(let i=0;i<CONC&&i<queue.length;i++) ws.push(worker());
+  await Promise.all(ws);
+  if(gen!==S.gen) return;
+  S.busy=false;
+  render();
+  const remain=S.dlItems.filter(r=>r.state!=="ok").map(r=>({href:r.href,offset:0}));
+  if(S.stop){
+    S.stop=false;
+    if(remain.length){ S.queue={pending:remain,ts:Date.now()}; saveQueue(S.queue); }
+    else{ clearQueue(); S.queue=null; }
+    renderQueueBtn();
+    renderDl();
+    $("pName").textContent="已停止";
+    $("pNum").textContent=`成功 ${done} 个 · 未完成已记录，可继续`;
+    toast(`已停止备份：成功 ${done} 个，进度已保存`);
+    return;
+  }
+  const spE1=$("dlSpeed"); if(spE1) spE1.textContent="";
+  if(fail>0){
+    if(remain.length){ S.queue={pending:remain,ts:Date.now()}; saveQueue(S.queue); }
+    else{ clearQueue(); S.queue=null; }
+  }else{
+    clearQueue(); S.queue=null;
+  }
+  renderQueueBtn();
+  renderDl();
+  $("pName").textContent=fail>0?"备份完成（有失败）":"备份完成";
+  $("pNum").textContent=fail>0?`成功 ${done} · 失败 ${fail}（详情见列表）`:`成功 ${done} 个`;
+  toast(fail>0?`备份中断：成功 ${done} 个，失败 ${fail} 个（已记录，可继续）`:`备份完成：成功 ${done} 个`);
+  if(NATIVE&&window.CameraBridge&&window.CameraBridge.notifyBackupDone){
+    try{ window.CameraBridge.notifyBackupDone(done,fail); }catch(e){}
+  }
+  if(fail>0&&!NATIVE) log("提示：失败可能是相机未开启 CORS（相机菜单 CCAPI → CORS 设置 → 允许来源 *）","err");
+  setTimeout(()=>$("dlPanel").style.display="none",4000);
+  if(auto&&S.connected&&!S.stop){ try{ await scanLight(); }catch(e){} }
+}
+function renderDl(){
+  const box=$("dlList");
+  box.innerHTML="";
+  const items=S.dlItems||[];
+  for(const d of items){
+    const row=document.createElement("div");
+    row.className="dlitem";
+    const st=d.state==="wait"?'<span class="ds wait">排队中</span>'
+      :d.state==="dl"?'<span class="ds dl">下载中…</span>'
+      :d.state==="ok"?'<span class="ds ok">已完成</span>'
+      :'<span class="ds fail">失败：'+esc(d.err||"")+'</span>';
+    row.innerHTML='<span class="dn">'+esc(d.name)+'</span>'+st;
+    box.appendChild(row);
+  }
+  if(!items.length){
+    box.innerHTML='<div style="padding:12px;color:var(--sub);font-size:12px;text-align:center">暂无备份任务</div>';
+  }
+  updateDlFab();
+}
+function refreshKeepBtn(){
+  const b=$("btnKeep");
+  if(!b) return;
+  if(NATIVE&&window.CameraBridge&&window.CameraBridge.hasOverlayPermission&&window.CameraBridge.hasOverlayPermission()){
+    b.textContent="加白名单";
+    b.className="btn-sm btn-ghost ctl";
+    b.onclick=()=>{ try{ window.CameraBridge.openBatterySettings(); }catch(e){} };
+  }else{
+    b.textContent="开悬浮窗";
+    b.className="btn-sm btn-ghost ctl";
+    b.onclick=()=>{ try{ window.CameraBridge.openOverlaySettings(); }catch(e){} };
+  }
+}
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden){ refreshKeepBtn(); updateBgBanner(); } });
+function updateBgBanner(){
+  const b=$("bgBanner");
+  if(!b) return;
+  if(NATIVE&&window.CameraBridge&&window.CameraBridge.hasOverlayPermission){
+    let ok=false;
+    try{ ok=window.CameraBridge.hasOverlayPermission(); }catch(e){}
+    b.style.display=ok?"none":"flex";
+  }else{
+    b.style.display="none";
+  }
+}
+$("bgBannerGo").onclick=()=>{ try{ window.CameraBridge.openOverlaySettings(); }catch(e){} };
+$("bgBannerClose").onclick=()=>{ $("bgBanner").style.display="none"; };
+function updateDlFab(){
+  const fab=$("btnDlFab");
+  if(!fab) return;
+  const open=S.dlOpen&&$("dlPanel").style.display==="flex";
+  const has=!!(S.dlItems&&S.dlItems.length)||!!(S.queue&&S.queue.pending&&S.queue.pending.length);
+  fab.style.display=(!open&&has)?"flex":"none";
+  const q=normQueue(S.queue)||[];
+  const remain=q.length||(S.dlItems?S.dlItems.filter(r=>r.state!=="ok").length:0);
+  const b=$("dlFabBadge");
+  if(b) b.textContent=String(remain);
+}
+function openDlFab(){
+  if(!S.dlItems||!S.dlItems.length){
+    const q=normQueue(S.queue)||[];
+    if(q.length) S.dlItems=q.map(x=>({href:x.href,name:nameOf(x.href),state:"wait",err:""}));
+  }
+  S.dlOpen=true;
+  $("dlPanel").style.display="flex";
+  renderDl();
+  updateDlFab();
+}
+function toggleDlPanel(){
+  if(!S.dlItems||!S.dlItems.length) return;
+  S.dlOpen=!S.dlOpen;
+  $("dlPanel").style.display=S.dlOpen?"flex":"none";
+  updateDlFab();
+}
+$("btnDlFab").onclick=openDlFab;
+$("btnDlClose").onclick=()=>{ S.dlOpen=false; $("dlPanel").style.display="none"; updateDlFab(); };
+$("btnDlClear").onclick=()=>{
+  S.stop=true;
+  S.gen=(S.gen||0)+1;
+  S.busy=false;
+  S.dlItems=[]; S.dlOpen=false;
+  clearQueue(); S.queue=null;
+  $("btnStop").disabled=true; $("btnStop").textContent="停止";
+  $("dlPanel").style.display="none";
+  $("dlSpeed").textContent="";
+  renderQueueBtn(); renderDl();
+  toast("备份任务已清除");
+};
+$("btnStop").onclick=()=>{ if(S.busy){ S.stop=true; $("btnStop").disabled=true; $("btnStop").textContent="停止中…"; } };
+$("btnBackup").onclick=backup;
+$("btnViewClose").onclick=()=>$("viewer").classList.remove("show");
+$("btnCloseResult").onclick=()=>$("resultModal").classList.remove("show");
+/* ===== 事件驱动自动备份 =====
+ * 相机 CCAPI 事件轮询：GET /ccapi/ver110/event/polling（ver110 为官方事件轮询功能族，端点由 topurlfordev 自报），
+ * 按下快门文件写入后相机立即返回 addedcontents（秒级），实现拍照即同步。
+ */
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+let evtSeq=0;
+function nativeEventWatch(){
+  return new Promise((resolve,reject)=>{
+    const cbName="__evt_"+(++evtSeq);
+    window[cbName]=jsonStr=>{
+      try{ delete window[cbName]; }catch(e){}
+      resolve(String(jsonStr||""));
+    };
+    try{
+      const evPath=(S.evtPaths&&S.evtPaths.polling)||"/ccapi/ver110/event/polling";
+      const q=S.pollQuery||"?timeout=long";
+      window.CameraBridge.eventWatch(S.base+evPath+q,"window."+cbName);
+    }catch(e){
+      try{ delete window[cbName]; }catch(e2){}
+      reject(e);
+    }
+  });
+}
+function nativeMonitorWatch(onFrame){
+  return new Promise((resolve)=>{
+    const cbName="__evt"+(++evtSeq)+"m";
+    window[cbName]=r=>{
+      const str=String(r==null?"":r);
+      if(str.charAt(0)==="{"){ try{ onFrame(str); }catch(e){} return; }
+      try{ delete window[cbName]; }catch(e){}
+      resolve(str);
+    };
+    const moPath=(S.evtPaths&&S.evtPaths.monitoring)||"/ccapi/ver100/event/monitoring";
+    try{ window.CameraBridge.monitorWatch(S.base+moPath,"window."+cbName); }
+    catch(e){ try{ delete window[cbName]; }catch(e2){} resolve("ERR"); }
+  });
+}
+async function processEventFrame(body,tag){
+  if(S._evtRetry>3000){ S._evtRetry=3000; try{ await scanLight(); }catch(e){} }
+  const obj=parseJsonStream(body)[0]||{};
+  const added=obj.addedcontents||[];
+  if(added.length){ log("EVT "+tag+"收到 "+added.length+" 个新文件，自动备份","ok"); await onNewFiles(added); }
+  if(Date.now()-(S.lastRecon||0)>15000){ S.lastRecon=Date.now(); try{ await scanLight(); }catch(e){} }
+}
+async function eventLoop(){
+  let mode=S.evtMode||(S.evtDead?"timer":"poll");
+  S._evtRetry=3000;
+  if(mode==="poll") log("EVT 事件轮询启动（"+((S.evtPaths&&S.evtPaths.polling)||"ver110 官方自报")+" "+(S.pollQuery||"?timeout=long")+"，按下快门秒级同步）","ok");
+  else if(mode==="monitor") log("EVT 事件流监听启动（"+((S.evtPaths&&S.evtPaths.monitoring)||"ver100 官方自报")+"，按下快门秒级同步）","ok");
+  else log("相机无官方事件端点，使用快速检测","warn");
+  try{
+    while(S.connected){
+      if(mode==="poll"){
+        let out="";
+        try{ out=String(await nativeEventWatch()||""); }catch(e){ out="ERR"; }
+        if(/^HTTP 404/.test(out)){
+          if(S.evtPaths&&S.evtPaths.monitoring){ mode="monitor"; log("event/polling 不可用（404），按官方改用 event/monitoring 事件流","warn"); continue; }
+          S.evtDead=true; mode="timer"; log("相机固件无事件接口（404），切换为快速检测","warn"); continue;
+        }
+        if(/^HTTP 400/.test(out)){
+          const chain={"?timeout=long":"?continue=on","?continue=on":"?timeout=immediately","?timeout=immediately":""};
+          if(Object.prototype.hasOwnProperty.call(chain,S.pollQuery)){
+            S.pollQuery=chain[S.pollQuery];
+            log("相机不支持当前轮询参数，按官方枚举改用 "+(S.pollQuery||"无参 polling"),"warn");
+          }
+          continue;
+        }
+        if(/^HTTP 50[234]/.test(out)){
+          log("相机繁忙（"+out+"），稍后继续监听","err");
+          S._evtRetry=Math.min(S._evtRetry*2,30000);
+          await sleep(S._evtRetry);
+          continue;
+        }
+        if(out==="TIMEOUT"||/^ERR/.test(out)){ await sleep(1000); continue; }
+        const body=out.trim();
+        if(body.length>2&&body!=="{}") await processEventFrame(body,"轮询");
+      }else if(mode==="monitor"){
+        let out="";
+        try{ out=String(await nativeMonitorWatch(frame=>{ processEventFrame(frame,"事件流"); })||""); }
+        catch(e){ out="ERR"; }
+        if(/^HTTP 404/.test(out)){
+          if(S.evtPaths&&S.evtPaths.polling){ mode="poll"; log("event/monitoring 不可用（404），按官方改用 event/polling","warn"); continue; }
+          S.evtDead=true; mode="timer"; log("事件流 monitoring 不可用（404），使用快速检测","warn"); continue;
+        }
+        if(/^HTTP 50[234]/.test(out)){
+          log("相机繁忙（"+out+"），稍后继续监听","err");
+          S._evtRetry=Math.min(S._evtRetry*2,30000);
+          await sleep(S._evtRetry);
+          continue;
+        }
+        if(out==="STOPPED"){ await sleep(500); continue; }
+        if(out==="CLOSED"||out==="TIMEOUT"||/^ERR/.test(out)){ await sleep(2500); continue; }
+        if(out.charAt(0)==="{") await processEventFrame(out,"事件流");
+      }else{
+        await sleep(S.timerS*1000);
+        if(!S.connected||S.busy) continue;
+        await scanLight();
+      }
+    }
+  }finally{
+    try{
+      const ep=mode==="monitor"?(S.evtPaths&&S.evtPaths.monitoring):(S.evtPaths&&S.evtPaths.polling);
+      if(ep&&window.CameraBridge&&window.CameraBridge.stopEvent) window.CameraBridge.stopEvent(mode,S.base+ep);
+    }catch(e){}
+  }
+}
+function parseJsonStream(s){
+  const out=[];
+  let i=0;
+  while(i<s.length){
+    if(s[i]==="{"){
+      let depth=0,j=i;
+      for(;j<s.length;j++){
+        if(s[j]==="{") depth++;
+        else if(s[j]==="}"){ depth--; if(depth===0){ j++; break; } }
+      }
+      try{ out.push(JSON.parse(s.slice(i,j))); }catch(e){}
+      i=j;
+    }else i++;
+  }
+  return out;
+}
+/* 轻量增量扫描 */
+const dirCache=window.__dirCache||(window.__dirCache={dirs:[],last:0});
+async function refreshFileDirs(){
+  const stack=[S.cardPath],dirs=[];
+  let hops=0;
+  while(stack.length&&hops<8){
+    const d=stack.shift();
+    let paths=[];
+    try{ paths=await listDirFlat(camUrl(d)); }catch(e){ continue; }
+    await sleep(60);
+    hops++;
+    const subs=[];
+    for(const href of paths){
+      const n=nameOf(href);
+      if(!n.includes(".")){ subs.push(href); continue; }
+      if(BACKUP_EXTS.includes("."+n.split(".").pop().toLowerCase())&&!dirs.includes(d)) dirs.push(d);
+    }
+    stack.push(...subs);
+  }
+  return dirs;
+}
+async function scanLight(){
+  if(!S.cardPath||S.scanning||S.busy) return;
+  S.scanning=true;
+  try{
+    const now=Date.now();
+    if(!dirCache.dirs.length||now-dirCache.last>30000){
+      dirCache.last=now;
+      try{ dirCache.dirs=await refreshFileDirs(); }catch(e){}
+    }
+    const added=[];
+    for(const dir of dirCache.dirs){
+      let paths=[];
+      try{ paths=await listDirFlat(camUrl(dir)); }catch(e){ continue; }
+      await sleep(80);
+      for(const href of paths){
+        const n=nameOf(href);
+        if(!n.includes(".")||!BACKUP_EXTS.includes("."+n.split(".").pop().toLowerCase())) continue;
+        if(!S.files.includes(href)) added.push(href);
+      }
+    }
+    if(added.length){
+      log(`检测到 ${added.length} 个新文件，自动同步…`,"ok");
+      S.files=S.files.concat(added);
+      S.visible=Math.max(S.visible,50);
+      render();
+      if(S.auto) await runBackup(added,true);
+    }
+  }catch(e){
+    if(!S.connected) return;
+  }finally{
+    S.scanning=false;
+  }
+}
+window.__bgTick=function(){
+  if(!S.connected||S.busy||S.scanning) return;
+  if(!document.hidden) return;
+  if(Date.now()-(window.__lastBgTick||0)<800) return;
+  window.__lastBgTick=Date.now();
+  scanLight();
+};
+async function onNewFiles(added){
+  if(S.busy) return;
+  const newFiles=added.filter(h=>{
+    const n=nameOf(h);
+    if(!n.includes(".")) return false;
+    return BACKUP_EXTS.includes("."+n.split(".").pop().toLowerCase());
+  });
+  if(!newFiles.length) return;
+  const unseen=newFiles.filter(h=>!S.files.includes(h));
+  if(unseen.length){
+    S.files=S.files.concat(unseen);
+    S.visible=Math.max(S.visible,50);
+    render();
+  }
+  if(S.auto){
+    await runBackup(newFiles,true);
+  }else{
+    toast("发现新文件 "+newFiles.length+" 个，可手动勾选备份");
+  }
+}
+async function fetchBlob(href,offset,onProg){
+  if(NATIVE){
+    const r=await nativeDownload(camUrl(href),nameOf(href),offset||0,onProg);
+    return {complete:!!r.complete,bytes:r.bytes||0,offset:r.offset||0,verified:!!r.verified,time:r.time||0};
+  }
+  const r=await fetch(camUrl(href));
+  if(!r.ok) throw new Error("HTTP "+r.status);
+  const blob=await r.blob();
+  await saveBlob(blob,nameOf(href));
+  return {complete:true,bytes:blob.size,verified:false};
+}
+async function saveBlob(blob,name){
+  const ext=name.split(".").pop().toLowerCase();
+  const type={jpg:"image/jpeg",jpeg:"image/jpeg",cr3:"image/x-canon-cr3",cr2:"image/x-canon-cr2",heif:"image/heif",hif:"image/heif",mp4:"video/mp4",mov:"video/quicktime"}[ext]||blob.type||"application/octet-stream";
+  const fb=new File([blob],name,{type});
+  if(window.showSaveFilePicker){
+    try{
+      const h=await window.showSaveFilePicker({suggestedName:name});
+      const w=await h.createWritable(); await w.write(fb); await w.close(); return;
+    }catch(e){ if(e&&e.name==="AbortError") return; }
+  }
+  const url=URL.createObjectURL(fb);
+  const a=document.createElement("a");
+  a.href=url; a.download=name; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); },4000);
+}
+function isDisconnect(m){ return /(Timeout|timed out|SocketException|ConnectException|eof|无法连接|Connection refused|网络|reset)/i.test(m||""); }
+function isBusy(m){ return /^HTTP (502|503|504|429)/.test(m||""); }
+async function probeCamera(){
+  try{
+    const r=reqTextFast(S.base+"/ccapi/ver100/topurlfordev");
+    return /^\s*\{/.test(r);
+  }catch(e){ return false; }
+}
+function fmtSize(b){ return b>1048576?(b/1048576).toFixed(1)+" MB":(b/1024).toFixed(0)+" KB"; }
+function showResult(results){
+  const okN=results.filter(r=>r.ok).length;
+  const bad=results.filter(r=>!r.ok);
+  $("rStat").innerHTML=`共 <b>${results.length}</b> 个文件 · 成功 <b style="color:var(--ok,#2e9e5b)">${okN}</b> · 失败 <b style="color:#d93b3b">${bad.length}</b>`;
+  const box=$("rList");
+  box.innerHTML="";
+  if(!bad.length){
+    box.innerHTML='<div style="padding:14px;color:var(--sub);font-size:13px;text-align:center">全部备份成功，照片已存入相册「CanonBackup」</div>';
+  }else{
+    for(const r of bad){
+      const d=document.createElement("div");
+      d.className="ritem";
+      d.innerHTML='<span class="rname">'+escapeHtml(r.name)+'</span><span class="rerr">'+escapeHtml(r.err||"失败")+'</span>';
+      box.appendChild(d);
+    }
+  }
+  $("btnRetryFail").style.display=bad.length?"":"none";
+  $("resultModal").classList.add("show");
+  S.lastFail=bad.map(r=>r.href);
+}
+$("btnRetryFail").onclick=()=>{
+  const hs=(S.dlItems||[]).filter(d=>d.state==="fail").map(d=>d.href);
+  $("resultModal").classList.remove("show");
+  if(!hs.length) return;
+  toast("重试 "+hs.length+" 个失败文件");
+  runBackup(hs,false);
+};
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
+/* ===== 全部文件权限 ===== */
+function updAllFiles(){
+  const b=$("btnAllFiles");
+  if(!b||!window.CameraBridge||!window.CameraBridge.hasAllFilesAccess) return;
+  try{
+    const ok=!!window.CameraBridge.hasAllFilesAccess();
+    b.textContent=ok?"已开启":"去开启";
+    b.style.color=ok?"var(--ok,#2e7d32)":"var(--accent,#1565c0)";
+  }catch(e){ b.textContent="不支持"; }
+}
+$("btnAllFiles").onclick=()=>{
+  try{
+    if(window.CameraBridge&&window.CameraBridge.hasAllFilesAccess&&window.CameraBridge.hasAllFilesAccess()){
+      updAllFiles(); toast("权限已开启");
+    }else if(window.CameraBridge&&window.CameraBridge.openAllFilesSettings){
+      window.CameraBridge.openAllFilesSettings();
+    }else{
+      toast("当前系统不支持，请手动到系统设置开启");
+    }
+  }catch(e){ toast("无法打开系统设置"); }
+};
+$("btnSetup").onclick=()=>{
+  const s=$("secSetup");
+  s.style.display=s.style.display==="none"?"block":"none";
+};
+$("btnDiag").onclick=()=>{
+  if(!NATIVE){ toast("诊断功能仅 App 版可用"); return; }
+  const ip=$("inpIp").value.trim()||S.ip;
+  const port=$("inpPort").value.trim()||"8080";
+  log("==== 网络诊断 "+ip+":"+port+" ====","ok");
+  try{
+    const r=window.CameraBridge.diagnose(ip,port);
+    log(esc(r).replace(/\n/g,"<br>"));
+  }catch(e){
+    log("诊断失败："+e.message,"err");
+  }
+};
+$("btnCopyLog").onclick=()=>{
+  const text=S.log.replace(/<[^>]+>/g,"").replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"');
+  if(NATIVE){
+    window.CameraBridge.copyText(text);
+    toast("日志已复制，请粘贴发给我");
+  }else{
+    const ta=document.createElement("textarea");
+    ta.value=text; document.body.appendChild(ta); ta.select();
+    try{ document.execCommand("copy"); toast("日志已复制"); }catch(e){ toast("请长按日志手动复制"); }
+    ta.remove();
+  }
+};
+/* 预览左右滑动 */
+{
+  let tx=null;
+  const v=$("viewer");
+  v.addEventListener("touchstart",e=>{ tx=e.touches[0].clientX; },{passive:true});
+  v.addEventListener("touchend",e=>{
+    if(tx===null) return;
+    const dx=e.changedTouches[0].clientX-tx;
+    tx=null;
+    if(dx>50) prevPreview(); else if(dx<-50) nextPreview();
+  },{passive:true});
+}
+/* 筛选 tab */
+document.querySelectorAll("#tabs button").forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll("#tabs button").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on");
+    S.filter=b.dataset.f;
+    S.visible=48;
+    render();
+  };
+});
+/* 滚动加载 */
+{
+  const more=$("more");
+  const obs=new IntersectionObserver(es=>{
+    if(es[0].isIntersecting&&S.connected){ S.visible+=48; render(); }
+  },{rootMargin:"300px"});
+  obs.observe(more);
+}
+/* 排序条 */
+const SORT_LABEL={date:"时间",name:"名称",size:"大小"};
+function syncSortUI(){
+  const cur=(S.sort||"date_desc").split("_");
+  const key=cur[0],dir=cur[1]||"desc";
+  document.querySelectorAll("#sortbar button").forEach(b=>{
+    const on=b.dataset.k===key;
+    b.classList.toggle("on",on);
+    b.innerHTML=SORT_LABEL[b.dataset.k]+(on?(dir==="desc"?" ↓":" ↑"):" ↓");
+  });
+}
+document.querySelectorAll("#sortbar button").forEach(b=>{
+  b.onclick=()=>{
+    const key=b.dataset.k;
+    const cur=(S.sort||"date_desc").split("_");
+    if(cur[0]===key){
+      S.sort=key+"_"+(cur[1]==="desc"?"asc":"desc");
+    }else{
+      S.sort=key+"_desc";
+    }
+    localStorage.setItem("cam_sort",S.sort);
+    S.visible=50;
+    syncSortUI();
+    render();
+  };
+});
+syncSortUI();
+/* 搜索框 */
+$("inpSearch").addEventListener("input",()=>{ S.search=$("inpSearch").value; S.visible=50; render(); });
+$("btnSearchClear").onclick=()=>{ $("inpSearch").value=""; S.search=""; S.visible=50; render(); $("inpSearch").focus(); };
+$("searchBox").onclick=e=>{
+  const sb=$("searchBox");
+  if(!sb.classList.contains("open")){
+    sb.classList.add("open");
+    $("inpSearch").focus();
+  }
+};
+$("inpIp").value=S.ip; $("inpPort").value=S.port;
+S.queue=loadQueue();
+S.queue=S.queue&&{pending:normQueue(S.queue)||[],ts:S.queue.ts};
+if(S.queue&&!S.queue.pending.length){ clearQueue(); S.queue=null; }
+renderQueueBtn();
+$("chkAuto").checked=S.auto;
+$("swAuto").classList.toggle("on",S.auto);
+$("chkAuto").onchange=e=>{ S.auto=e.target.checked; $("swAuto").classList.toggle("on",S.auto); setKnob("swAuto",S.auto); localStorage.setItem("cam_auto",S.auto?"1":"0"); };
+$("chkAutoAll").checked=S.autoAll;
+$("swAutoAll").classList.toggle("on",S.autoAll);
+$("chkAutoAll").onchange=e=>{ S.autoAll=e.target.checked; $("swAutoAll").classList.toggle("on",S.autoAll); setKnob("swAutoAll",S.autoAll); localStorage.setItem("cam_autoall",S.autoAll?"1":"0"); };
+function setKnob(swId,on){
+  const sw=$(swId),box=sw.parentElement;
+  box.style.width="44px"; box.style.minWidth="44px"; box.style.maxWidth="44px";
+  sw.style.width="44px"; sw.style.minWidth="44px";
+  sw.querySelector(".knob").style.left=on?"22px":"2px";
+}
+setKnob("swAuto",S.auto); setKnob("swAutoAll",S.autoAll);
+$("selPar").value=String(S.par);
+$("selPar").onchange=e=>{ S.par=parseInt(e.target.value)||1; localStorage.setItem("cam_par",String(S.par)); };
+$("inpPollS").value=String(S.pollS);
+$("inpPollS").onchange=e=>{ const v=parseFloat(e.target.value); if(isNaN(v)||v<1){ e.target.value="2.5"; S.pollS=2.5; }else{ S.pollS=v; } localStorage.setItem("cam_poll_s",String(S.pollS)); };
+$("inpTimerS").value=String(S.timerS);
+$("inpTimerS").onchange=e=>{ const v=parseFloat(e.target.value); if(isNaN(v)||v<1){ e.target.value="2.5"; S.timerS=2.5; }else{ S.timerS=v; } localStorage.setItem("cam_timer_s",String(S.timerS)); };
+refreshKeepBtn();
+if(NATIVE){ try{ window.CameraBridge.ensureStoragePermission(); }catch(e){} }
+loadBacked(); loadMeta(); loadOpenGroups();
+applyModeUI(true);
+function applyModeUI(first){
+  const b=$("btnConnect");
+  if(first){
+    log(NATIVE?"佳能备份 v1.2.84（原生版：官方 CCAPI 事件驱动，拍照秒级同步）":"佳能备份 v1.2.84（网页预览版：受浏览器 CORS 限制，仅演示界面）","ok");
+  }
+  const isWeb=!NATIVE;
+  $("btnKeep").style.display=isWeb?"none":"";
+  $("btnAllFiles").style.display=isWeb?"none":"";
+  $("btnDiag").style.display=isWeb?"none":"";
+}
+function startTimer(){
+  setInterval(async()=>{
+    if(!S.connected||S.busy) return;
+    try{ await scanLight(); }catch(e){}
+  },S.timerS*1000);
+}
+</script>
+<script>
+(function(){
+  document.documentElement.style.setProperty('--sb-h','0px');
+})();
+</script>
+</body>
+</html>
